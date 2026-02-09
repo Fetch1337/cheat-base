@@ -1,0 +1,18 @@
+[package]
+name = "app"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/entry_point.rs"
+
+[dependencies]
+windows.workspace = true
+log.workspace = true
+obfuse.workspace = true
+libmem.workspace = true
+hudhook.workspace = true
+
+# workspace dependencies
+core = { path = "../core" }
