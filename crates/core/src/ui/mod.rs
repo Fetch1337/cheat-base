@@ -1,37 +1,7 @@
 use crate::cfg;
-use crate::input;
-
-use hudhook::{imgui::*, *};
+use hudhook::imgui::{Condition, Ui};
 use std::path::Path;
-
-pub struct Overlay;
-
-impl ImguiRenderLoop for Overlay {
-    fn render(&mut self, ui: &mut imgui::Ui) {
-        input::on_render(ui);
-
-        let config = cfg::get_config().read().unwrap();
-        if !input::is_bind_active(config.menu_key) {
-            return;
-        }
-
-        ui.window("Rust Internal Hook")
-            .size([300.0, 200.0], Condition::FirstUseEver)
-            .build(|| {
-                ui.text("Nigga Settings");
-
-                if ui.button("Save Config") {
-                    save_config("settings.json");
-                }
-
-                ui.same_line();
-
-                if ui.button("Load Config") {
-                    load_config("settings.json");
-                }
-            });
-    }
-}
+use crate::input;
 
 pub fn load_config<P: AsRef<Path>>(path: P) {
     match cfg::load::<cfg::Config>(path.as_ref().to_str().unwrap_or("config.json")) {
@@ -53,4 +23,31 @@ pub fn save_config<P: AsRef<Path>>(path: P) {
             println!("Config saved successfully");
         }
     }
+}
+
+pub fn draw_menu(ui: &Ui) {
+    let config = cfg::get_config().read().unwrap();
+    if !input::is_bind_active(config.menu_key) {
+        return;
+    }
+
+    ui.window("Rust Internal Hook")
+        .size([300.0, 200.0], Condition::FirstUseEver)
+        .build(|| {
+            ui.text("Nigga Settings");
+
+            if ui.button("Save Config") {
+                save_config("settings.json");
+            }
+
+            ui.same_line();
+
+            if ui.button("Load Config") {
+                load_config("settings.json");
+            }
+        });
+}
+
+pub fn instance(ui: &Ui) {
+    draw_menu(ui);
 }
