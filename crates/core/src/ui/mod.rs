@@ -1,7 +1,7 @@
 use crate::cfg;
+use crate::input;
 use hudhook::imgui::{Condition, Ui};
 use std::path::Path;
-use crate::input;
 
 pub fn load_config<P: AsRef<Path>>(path: P) {
     match cfg::load::<cfg::Config>(path.as_ref().to_str().unwrap_or("config.json")) {
@@ -48,6 +48,6 @@ pub fn draw_menu(ui: &Ui) {
         });
 }
 
-pub fn instance(ui: &Ui) {
+pub fn on_render(ui: &Ui) {
     draw_menu(ui);
 }
