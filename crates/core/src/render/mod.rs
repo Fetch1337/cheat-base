@@ -1,18 +1,3 @@
-use crate::input;
-use crate::ui;
-use hudhook::imgui;
-use hudhook::*;
-
-pub struct Overlay;
-
-impl ImguiRenderLoop for Overlay {
-    fn render(&mut self, ui: &mut imgui::Ui) {
-        input::on_render(ui);
-        ui::on_render(ui);
-        draw::render_example(ui, None);
-    }
-}
-
 #[allow(dead_code)]
 pub mod draw {
     use hudhook::imgui::draw_list::DrawFlags;

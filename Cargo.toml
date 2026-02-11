@@ -12,7 +12,9 @@ windows = { version = "0.54", features = [
 log = "0.4"
 obfuse = "1.0"
 libmem = "5.1"
-hudhook = "0.8"
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# fix dx11 backend (temporary solution until the commit is approved)
+hudhook = { git = "https://github.com/veeenu/hudhook", rev = "14139d8f7bf36adb7d4c45ee96a61fd6548a4561" }

@@ -2,11 +2,38 @@ use std::thread;
 use windows::Win32::Foundation::{BOOL, HINSTANCE};
 use windows::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
 
-mod instance;
+use hudhook::{eject, Hudhook};
+use log::{error, trace};
+
+mod draw;
+mod hooks;
+mod menu;
+mod sdk;
+mod variables;
 
 fn main_thread(h_module: HINSTANCE) {
-    core::initialize(h_module);
-    instance::initialize();
+    trace!("setup default config");
+    {
+        let config_path = format!(
+            "{}\\settings.json",
+            std::env::current_dir().unwrap().display()
+        );
+
+        variables::init_config(&config_path);
+    }
+
+    trace!("setup base render hooks");
+    {
+        if let Err(e) = Hudhook::builder()
+            .with::<hudhook::hooks::dx11::ImguiDx11Hooks>(draw::Overlay)
+            .with_hmodule(h_module)
+            .build()
+            .apply()
+        {
+            error!("couldn't apply hooks: {e:?}");
+            eject();
+        }
+    }
 }
 
 #[no_mangle]

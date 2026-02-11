@@ -13,6 +13,8 @@ log.workspace = true
 obfuse.workspace = true
 libmem.workspace = true
 hudhook.workspace = true
+anyhow.workspace = true
+serde.workspace = true
 
 # workspace dependencies
 core = { path = "../core" }
