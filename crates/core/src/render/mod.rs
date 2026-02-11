@@ -1,7 +1,7 @@
 #[allow(dead_code)]
 pub mod draw {
     use hudhook::imgui::draw_list::DrawFlags;
-    use hudhook::imgui::{self, DrawListMut, FontId, ImColor32, Ui};
+    use hudhook::imgui::{DrawListMut, FontId, ImColor32, Ui};
 
     const TEXT_OUTLINE_DIR4: [[f32; 2]; 4] = [[-1.0, 0.0], [1.0, 0.0], [0.0, -1.0], [0.0, 1.0]];
     const TEXT_OUTLINE_DIR8: [[f32; 2]; 8] = [
@@ -453,30 +453,5 @@ pub mod draw {
                     .build();
             }
         }
-    }
-
-    pub fn render_example(ui: &imgui::Ui, maybe_font: Option<FontId>) {
-        let draw = DrawContext::foreground(ui);
-
-        draw.rect(
-            [40.0, 40.0],
-            [220.0, 120.0],
-            ImColor32::from_rgb(35, 120, 220),
-        )
-        .rounding(6.0)
-        .outline()
-        .outline_thickness(2.0)
-        .draw();
-
-        draw.circle([320.0, 90.0], 28.0, ImColor32::from_rgb(90, 220, 130))
-            .outline()
-            .segments(32)
-            .draw();
-
-        let mut text = draw.text([44.0, 46.0], "Text", ImColor32::WHITE).outline();
-        if let Some(font) = maybe_font {
-            text = text.font(font).size(18.0);
-        }
-        text.draw();
     }
 }
