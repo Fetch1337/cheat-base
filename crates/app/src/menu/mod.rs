@@ -1,16 +1,11 @@
 use hudhook::imgui::{Condition, Ui};
 
-use crate::variables;
+use crate::variables::{self, *};
 use core::config::ConfigManager;
 use core::input;
 
 pub fn draw_menu(ui: &Ui) {
-    let show_menu = {
-        let cfg = variables::get_config().read().unwrap();
-        input::is_bind_active(cfg.menu_key)
-    };
-
-    if !show_menu {
+    if !Variables::read(|cfg| input::is_bind_active(cfg.menu_key)) {
         return;
     }
 
@@ -19,20 +14,22 @@ pub fn draw_menu(ui: &Ui) {
         .build(|| {
             ui.text("cheat settings");
             {
-                let config_path = format!(
-                    "{}\\settings.json",
-                    std::env::current_dir().unwrap().display()
-                );
+                let config_path = variables::get_config_path("settings.json");
+
+                Variables::write(|cfg| {
+                    ui.checkbox("enable", &mut cfg.test_bool);
+                });
 
                 if ui.button("save config") {
-                    let cfg = variables::get_config().read().unwrap();
-                    cfg.save(&config_path).expect("failed to save");
+                    Variables::read(|cfg| {
+                        let _ = cfg.save(&config_path);
+                    });
                 }
 
                 ui.same_line();
 
                 if ui.button("load config") {
-                    variables::reload_config(&config_path);
+                    Variables::reload(&config_path);
                 }
             }
         });

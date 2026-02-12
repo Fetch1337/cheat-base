@@ -1,3 +1,4 @@
+use core::config::ConfigManager;
 use std::thread;
 use windows::Win32::Foundation::{BOOL, HINSTANCE};
 use windows::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
@@ -12,14 +13,11 @@ mod sdk;
 mod variables;
 
 fn main_thread(h_module: HINSTANCE) {
-    trace!("setup default config");
+    trace!("setup config");
     {
-        let config_path = format!(
-            "{}\\settings.json",
-            std::env::current_dir().unwrap().display()
-        );
-
-        variables::init_config(&config_path);
+        variables::init_config_directory();
+        let config_path = variables::get_config_path("default.json");
+        variables::Variables::init(config_path);
     }
 
     trace!("setup base render hooks");

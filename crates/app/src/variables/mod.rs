@@ -1,40 +1,45 @@
-use core::config::ConfigManager;
-use serde::{Deserialize, Serialize};
-use std::sync::{OnceLock, RwLock};
-
+use core::config::{impl_config, ConfigManager};
 use core::input;
+
 use hudhook::imgui::Key;
+use serde::{Deserialize, Serialize};
+
+use std::path::PathBuf;
+use std::sync::OnceLock;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Variables {
     pub menu_key: input::KeyBinds,
+    pub test_bool: bool,
 }
 
 impl Default for Variables {
     fn default() -> Self {
         Self {
             menu_key: input::KeyBinds::new(Key::Insert as u32, input::KeyMode::Toggle),
+            test_bool: false,
         }
     }
 }
 
-impl ConfigManager for Variables {}
+static GLOBAL_CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
 
-static CONFIG: OnceLock<RwLock<Variables>> = OnceLock::new();
+pub fn init_config_directory() {
+    GLOBAL_CONFIG_DIR.get_or_init(|| {
+        let mut path = std::env::var_os("APPDATA")
+            .map(PathBuf::from)
+            .expect("failed to get APPDATA");
 
-pub fn init_config(path: &str) {
-    let cfg = Variables::load_or_default(path);
-    let _ = CONFIG.set(RwLock::new(cfg));
+        path.push("cheat-base");
+        path
+    });
 }
 
-pub fn reload_config(path: &str) {
-    let new_cfg = Variables::load_or_default(path);
-    if let Some(lock) = CONFIG.get() {
-        let mut cfg = lock.write().unwrap();
-        *cfg = new_cfg;
-    }
+pub fn get_config_path(name: &str) -> PathBuf {
+    let base = GLOBAL_CONFIG_DIR
+        .get()
+        .expect("config directory not initialized!");
+    base.join(name)
 }
 
-pub fn get_config() -> &'static RwLock<Variables> {
-    CONFIG.get().expect("config must be initialized before use")
-}
+impl_config!(Variables);
