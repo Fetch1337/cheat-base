@@ -14,7 +14,7 @@ pub fn draw_menu(ui: &Ui) {
         .build(|| {
             ui.text("cheat settings");
             {
-                let config_path = variables::get_config_path("settings.json");
+                let config_path = variables::get_path("settings.json");
 
                 Variables::write(|cfg| {
                     ui.checkbox("enable", &mut cfg.test_bool);

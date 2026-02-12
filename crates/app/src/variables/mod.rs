@@ -24,18 +24,18 @@ impl Default for Variables {
 
 static GLOBAL_CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
 
-pub fn init_config_directory() {
+pub fn init_directory(name: &str) {
     GLOBAL_CONFIG_DIR.get_or_init(|| {
         let mut path = std::env::var_os("APPDATA")
             .map(PathBuf::from)
             .expect("failed to get APPDATA");
 
-        path.push("cheat-base");
+        path.push(name);
         path
     });
 }
 
-pub fn get_config_path(name: &str) -> PathBuf {
+pub fn get_path(name: &str) -> PathBuf {
     let base = GLOBAL_CONFIG_DIR
         .get()
         .expect("config directory not initialized!");

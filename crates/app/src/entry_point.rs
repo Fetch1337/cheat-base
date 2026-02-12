@@ -15,8 +15,8 @@ mod variables;
 fn main_thread(h_module: HINSTANCE) {
     trace!("setup config");
     {
-        variables::init_config_directory();
-        let config_path = variables::get_config_path("default.json");
+        variables::init_directory("cheat-base");
+        let config_path = variables::get_path("default.json");
         variables::Variables::init(config_path);
     }
 
