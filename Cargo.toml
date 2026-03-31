@@ -15,6 +15,4 @@ libmem = "5.1"
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# fix dx11 backend (temporary workaround until hoodhook update on crates.io)
-hudhook = { git = "https://github.com/veeenu/hudhook", rev = "acc267afe965869afcb5c557a41c6d0a1b416963" }
+hudhook = "0.9"
