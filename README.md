@@ -1,4 +1,4 @@
-# Morphey Cheat Base v2
+# Morphey Cheat Base
 
 A universal base for creating game cheats in Rust with multi-renderer support and convenient abstractions.
 
@@ -27,7 +27,7 @@ src/
 
 ## Features
 
-- **Multi-renderer Support** — DirectX 9, 11, 12, OpenGL 3 via [hudhook](https://github.com/Fetch1337/hudhook). Switching renderer requires changing **one line** (see below).
+- **Multi-renderer Support** — DirectX 9, 11, 12, OpenGL 3 via [hudhook](https://github.com/veeenu/hudhook). Switching renderer requires changing **one line** (see below).
 - **Draw API** — builder-pattern primitives with outline support (rect, circle, line, text, polygon)
 - **ImGui Menu** — custom dark theme with rounded corners
 - **Config System** — JSON-based, auto-saved to `%APPDATA%/morphey/`
@@ -69,7 +69,7 @@ The DLL will be at `target/release/morphey.dll`.
 
 ## Dependencies
 
-- [hudhook](https://github.com/Fetch1337/hudhook) — renderer hooks & ImGui rendering (custom fork)
+- [hudhook](https://github.com/veeenu/hudhook) — renderer hooks & ImGui rendering
 - [obfstr](https://github.com/CasualX/obfstr) — compile-time string obfuscation
 - [serde](https://serde.rs) / [serde_json](https://docs.rs/serde_json) — config serialization
 - [windows-rs](https://github.com/microsoft/windows-rs) — Win32 API bindings
