@@ -1,0 +1,58 @@
+use hudhook::imgui;
+
+pub fn apply(ctx: &mut imgui::Context) {
+    let style = ctx.style_mut();
+    style.window_rounding = 6.0;
+    style.child_rounding = 4.0;
+    style.frame_rounding = 4.0;
+    style.popup_rounding = 4.0;
+    style.grab_rounding = 4.0;
+    style.tab_rounding = 4.0;
+    style.scrollbar_rounding = 4.0;
+    style.window_padding = [14.0, 14.0];
+    style.frame_padding = [8.0, 5.0];
+    style.item_spacing = [8.0, 6.0];
+    style.item_inner_spacing = [6.0, 4.0];
+    style.scrollbar_size = 10.0;
+    style.grab_min_size = 10.0;
+    style.window_border_size = 1.0;
+
+    let c = &mut style.colors;
+    c[imgui::StyleColor::Text as usize] = [0.90, 0.90, 0.94, 1.0];
+    c[imgui::StyleColor::TextDisabled as usize] = [0.44, 0.44, 0.50, 1.0];
+    c[imgui::StyleColor::WindowBg as usize] = [0.06, 0.06, 0.09, 0.96];
+    c[imgui::StyleColor::ChildBg as usize] = [0.08, 0.08, 0.12, 1.0];
+    c[imgui::StyleColor::PopupBg as usize] = [0.06, 0.06, 0.09, 0.96];
+    c[imgui::StyleColor::Border as usize] = [0.18, 0.20, 0.28, 0.60];
+    c[imgui::StyleColor::BorderShadow as usize] = [0.0, 0.0, 0.0, 0.0];
+    c[imgui::StyleColor::FrameBg as usize] = [0.10, 0.10, 0.16, 1.0];
+    c[imgui::StyleColor::FrameBgHovered as usize] = [0.16, 0.16, 0.24, 1.0];
+    c[imgui::StyleColor::FrameBgActive as usize] = [0.20, 0.20, 0.30, 1.0];
+    c[imgui::StyleColor::TitleBg as usize] = [0.04, 0.04, 0.06, 1.0];
+    c[imgui::StyleColor::TitleBgActive as usize] = [0.08, 0.08, 0.12, 1.0];
+    c[imgui::StyleColor::TitleBgCollapsed as usize] = [0.04, 0.04, 0.06, 0.6];
+    c[imgui::StyleColor::MenuBarBg as usize] = [0.06, 0.06, 0.09, 1.0];
+    c[imgui::StyleColor::ScrollbarBg as usize] = [0.04, 0.04, 0.06, 0.4];
+    c[imgui::StyleColor::ScrollbarGrab as usize] = [0.18, 0.18, 0.26, 0.5];
+    c[imgui::StyleColor::ScrollbarGrabHovered as usize] = [0.24, 0.24, 0.34, 0.6];
+    c[imgui::StyleColor::ScrollbarGrabActive as usize] = [0.28, 0.28, 0.40, 0.7];
+    c[imgui::StyleColor::CheckMark as usize] = [0.30, 0.68, 0.98, 1.0];
+    c[imgui::StyleColor::SliderGrab as usize] = [0.30, 0.68, 0.98, 1.0];
+    c[imgui::StyleColor::SliderGrabActive as usize] = [0.40, 0.76, 1.0, 1.0];
+    c[imgui::StyleColor::Button as usize] = [0.20, 0.36, 0.58, 0.70];
+    c[imgui::StyleColor::ButtonHovered as usize] = [0.28, 0.46, 0.70, 0.90];
+    c[imgui::StyleColor::ButtonActive as usize] = [0.34, 0.54, 0.82, 1.0];
+    c[imgui::StyleColor::Header as usize] = [0.20, 0.36, 0.58, 0.50];
+    c[imgui::StyleColor::HeaderHovered as usize] = [0.28, 0.46, 0.70, 0.70];
+    c[imgui::StyleColor::HeaderActive as usize] = [0.34, 0.54, 0.82, 0.90];
+    c[imgui::StyleColor::Tab as usize] = [0.06, 0.06, 0.09, 1.0];
+    c[imgui::StyleColor::TabHovered as usize] = [0.28, 0.46, 0.70, 0.80];
+    c[imgui::StyleColor::TabActive as usize] = [0.20, 0.36, 0.58, 1.0];
+    c[imgui::StyleColor::Separator as usize] = [0.18, 0.20, 0.28, 0.50];
+    c[imgui::StyleColor::SeparatorHovered as usize] = [0.28, 0.46, 0.70, 0.70];
+    c[imgui::StyleColor::SeparatorActive as usize] = [0.34, 0.54, 0.82, 1.0];
+    c[imgui::StyleColor::ResizeGrip as usize] = [0.30, 0.68, 0.98, 0.20];
+    c[imgui::StyleColor::ResizeGripHovered as usize] = [0.30, 0.68, 0.98, 0.50];
+    c[imgui::StyleColor::ResizeGripActive as usize] = [0.40, 0.76, 1.0, 0.80];
+    c[imgui::StyleColor::TextSelectedBg as usize] = [0.30, 0.68, 0.98, 0.35];
+}
