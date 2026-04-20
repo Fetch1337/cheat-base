@@ -34,7 +34,7 @@ src/
 - **Config System** — JSON-based, auto-saved to `%APPDATA%/morphey/`
 - **Keybind System** — toggle, hold, force_on, force_off modes
 - **String Obfuscation** — compile-time via [obfstr](https://github.com/CasualX/obfstr)
-- **Debug Logging** — optional console + `tracing` (feature `debug-logging`, enabled by default)
+- **Debug Logging** — debug console + `tracing` (only in debug build)
 
 ## Switching Renderer
 
