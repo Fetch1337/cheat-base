@@ -24,8 +24,8 @@ pub fn menu_visible() -> bool {
 
 pub fn on_render(ui: &Ui) {
     MENU_VISIBLE.store(
-        input::is_bind_active(config::get().menu_key),
-        Ordering::Relaxed,
+        input::is_bind_active(config::get().unwrap().menu_key),
+         Ordering::Relaxed
     );
 
     draw_menu(ui);

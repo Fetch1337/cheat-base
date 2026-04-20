@@ -18,7 +18,7 @@ impl ImguiRenderLoop for Overlay {
 
     fn message_filter(&self, _io: &imgui::Io) -> MessageFilter {
         if menu::menu_visible() {
-            MessageFilter::InputMouse
+            MessageFilter::InputMouse | MessageFilter::InputKeyboard
         } else {
             MessageFilter::empty()
         }
@@ -29,15 +29,9 @@ impl ImguiRenderLoop for Overlay {
     }
 }
 
-pub fn init(hmodule: HINSTANCE) {
-    let builder = hudhook::Hudhook::builder().with_hmodule(hmodule);
+pub fn init(hmodule: HINSTANCE) -> Result<(), String> {
+    let builder = hudhook::Hudhook::builder().with_hmodule(hmodule)
+        .with::<hudhook::hooks::dx11::ImguiDx11Hooks>(Overlay);
 
-    if let Err(e) = builder
-        .with::<hudhook::hooks::dx11::ImguiDx11Hooks>(Overlay)
-        .build()
-        .apply()
-    {
-        tracing::error!("dx11 hook failed: {:?}. ensure the game uses DirectX 11", e);
-        eject();
-    }
+    builder.build().apply().map_err(|e: mh::MH_STATUS| format!("{e:?}"))
 }

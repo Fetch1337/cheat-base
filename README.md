@@ -22,7 +22,8 @@ src/
 └── utilities/          # Shared utilities
     ├── input/          # Keybind system (toggle / hold / force_on / force_off)
     ├── math/           # Math helpers
-    └── hook/           # Hook helpers
+    ├── hook/           # Hook helpers
+    └── logging/        # Logging helpers
 ```
 
 ## Features
@@ -55,8 +56,19 @@ In `src/gfx/render/mod.rs`, change the hook type on a single line:
 
 ## Building
 
+Step 1:
 ```sh
-cargo build --release
+cargo rustup install nightly
+```
+
+Step 2:
+```sh
+cargo install cargo-alias-exec
+```
+
+Step 3:
+```sh
+cargo release
 ```
 
 The DLL will be at `target/release/morphey.dll`.
@@ -74,4 +86,4 @@ The DLL will be at `target/release/morphey.dll`.
 - [serde](https://serde.rs) / [serde_json](https://docs.rs/serde_json) — config serialization
 - [windows-rs](https://github.com/microsoft/windows-rs) — Win32 API bindings
 - [parking_lot](https://github.com/Amanieu/parking_lot) — efficient synchronization primitives
-- [smallvec](https://github.com/servo/rust-smallvec) — small vector optimization
+

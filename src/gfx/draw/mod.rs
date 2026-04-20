@@ -1,6 +1,5 @@
 use hudhook::imgui::draw_list::DrawFlags;
 use hudhook::imgui::{DrawListMut, FontId, ImColor32, Ui};
-use smallvec::SmallVec;
 
 const TEXT_OUTLINE_DIR4: [[f32; 2]; 4] = [[-1.0, 0.0], [1.0, 0.0], [0.0, -1.0], [0.0, 1.0]];
 const TEXT_OUTLINE_DIR8: [[f32; 2]; 8] = [
@@ -370,12 +369,13 @@ impl TextCmd<'_, '_, '_> {
         let ui = self.ctx.ui;
         let _font_token = self.font.map(|f| ui.push_font(f));
 
-        let mut reset_scale = false;
+        let mut restore_scale = None;
         if let Some(target_size) = self.size {
             let current_font_size = ui.current_font_size();
             if (target_size - current_font_size).abs() > 0.1 {
-                ui.set_window_font_scale(target_size / ui.current_font().font_size);
-                reset_scale = true;
+                let current_font = ui.current_font();
+                restore_scale = Some(current_font_size / current_font.font_size);
+                ui.set_window_font_scale(target_size / current_font.font_size);
             }
         }
 
@@ -407,8 +407,8 @@ impl TextCmd<'_, '_, '_> {
 
         dl.add_text(self.pos, self.color, self.text);
 
-        if reset_scale {
-            ui.set_window_font_scale(1.0);
+        if let Some(scale) = restore_scale {
+            ui.set_window_font_scale(scale);
         }
     }
 }
@@ -458,15 +458,21 @@ impl PolygonCmd<'_, '_, '_> {
         }
         let dl = self.ctx.get_draw_list();
 
-        let points: SmallVec<[[f32; 2]; 16]> = self.points.iter().copied().collect();
+        let points: Vec<[f32; 2]> = self.points.to_vec();
+        let draw_outline = self.outline || !self.filled;
 
         if self.filled {
-            dl.add_polyline(points.into_vec(), self.color)
-                .filled(true)
-                .build();
+            if draw_outline {
+                dl.add_polyline(points.clone(), self.color)
+                    .filled(true)
+                    .build();
+            } else {
+                dl.add_polyline(points, self.color).filled(true).build();
+                return;
+            }
         }
 
-        if self.outline || !self.filled {
+        if draw_outline {
             let color = self.outline_color.unwrap_or(if self.filled {
                 self.ctx.defaults.outline_color
             } else {
@@ -477,8 +483,7 @@ impl PolygonCmd<'_, '_, '_> {
                 .or(self.thickness)
                 .unwrap_or(self.ctx.defaults.thickness);
 
-            let points: SmallVec<[[f32; 2]; 16]> = self.points.iter().copied().collect();
-            dl.add_polyline(points.into_vec(), color)
+            dl.add_polyline(points, color)
                 .filled(false)
                 .thickness(thick)
                 .build();

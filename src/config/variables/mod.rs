@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::utilities::input::{BindType, KeyBinds};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Variables {
     pub menu_key: KeyBinds,
 }

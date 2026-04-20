@@ -7,26 +7,31 @@ use windows::Win32::Foundation::{HINSTANCE, HMODULE};
 use windows::Win32::System::LibraryLoader::DisableThreadLibraryCalls;
 use windows::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
 
+#[allow(unused_variables)]
 fn load(hmodule: HINSTANCE) {
-    #[cfg(feature = "debug-logging")]
+    #[cfg(debug_assertions)]
     {
         let _ = hudhook::alloc_console();
         hudhook::enable_console_colors();
 
-        tracing_subscriber::fmt()
+        let _ = tracing_subscriber::fmt()
             .with_max_level(tracing::Level::INFO)
-            .init();
+            .try_init();
     }
 
-    tracing::info!("{}", obfstr::obfstr!("initializing config"));
-    config::init(obfstr::obfstr!("morphey"));
+    log_info!("initializing config");
+    if let Err(e) = config::init(obfstr::obfstr!("morphey")) {
+        log_error!("config init failed: {e}");
+    }
 
-    tracing::info!("{}", obfstr::obfstr!("initializing render"));
-    gfx::render::init(hmodule);
+    log_info!("initializing render");
+    if let Err(e) = gfx::render::init(hmodule) {
+        log_error!("render init failed: {e}");
+    }
 }
 
 fn unload(_hmodule: HINSTANCE) {
-    tracing::info!("{}", obfstr::obfstr!("unloading"));
+    log_info!("unloading");
     hudhook::eject();
 }
 

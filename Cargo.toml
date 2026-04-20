@@ -7,24 +7,35 @@ edition = "2024"
 crate-type = ["cdylib"]
 path = "src/entry_point.rs"
 
-[features]
-default = ["debug-logging"]
-debug-logging = []
-
 [dependencies]
 hudhook = { git = "https://github.com/Fetch1337/hudhook.git" }
+libmem = "5.1"
+minhook = "0.9"
 obfstr = "0.4"
 parking_lot = "0.12"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-smallvec = "1"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 windows = { version = "0.62", features = [
     "Win32_Foundation",
+    "Win32_System_ProcessStatus",
     "Win32_System_SystemServices",
     "Win32_System_LibraryLoader",
     "Win32_System_Threading",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
 ] }
+
+[profile.dev]
+opt-level = 1
+debug = true
+split-debuginfo = "packed"
+
+[profile.release]
+codegen-units = 1
+opt-level = 3
+debug = false
+strip = "symbols"
+lto = "fat"
+panic = "abort"

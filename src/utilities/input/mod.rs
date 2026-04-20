@@ -18,7 +18,7 @@ pub enum BindType {
     ForceOff,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct KeyBinds {
     pub key: u32,
     pub mode: BindType,
@@ -48,9 +48,7 @@ fn update_key_state(vk_code: u32, is_down: bool) {
 
     if is_down {
         if !HOLD_KEYS[idx].load(Ordering::Relaxed) {
-            TOGGLE_KEYS[idx]
-                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |v| Some(!v))
-                .ok();
+            TOGGLE_KEYS[idx].fetch_xor(true, Ordering::Relaxed);
             HOLD_KEYS[idx].store(true, Ordering::Relaxed);
         }
     } else {
