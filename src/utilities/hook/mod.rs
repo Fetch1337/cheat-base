@@ -21,6 +21,7 @@ pub enum HookError {
     LockPoisoned,
     MinHookInitFailed,
     CreateHookFailed,
+    ExternalError,
 }
 
 impl fmt::Display for HookError {
@@ -28,7 +29,8 @@ impl fmt::Display for HookError {
         match self {
             Self::LockPoisoned => write!(f, "{}", obfstr::obfstr!("lock poisoned")),
             Self::MinHookInitFailed => write!(f, "{}", obfstr::obfstr!("min hook init failed")),
-            Self::CreateHookFailed => write!(f, "{}", obfstr::obfstr!("create hook failed"))
+            Self::CreateHookFailed => write!(f, "{}", obfstr::obfstr!("create hook failed")),
+            Self::ExternalError => write!(f, "{}", obfstr::obfstr!("external error"))
         }
     }
 }
@@ -111,9 +113,8 @@ macro_rules! create_hook {
         let detour_function_ptr =
             $detour_function as *const std::ffi::c_void;
 
-        log_info!("hooking target function: {:p}", target_function);
-
-        hook_system::Hook::hook(target_function, detour_function_ptr)?;
+        crate::log_info!("hooking target function: {:p}", target_function);
+        crate::utilities::hook::Hook::hook(target_function, detour_function_ptr)?;
     }};
 }
 
@@ -125,7 +126,7 @@ macro_rules! get_original_fn {
                 *mut std::ffi::c_void,
                 extern "system" fn($($arg),*) -> $ret,
             >(
-                hook_system::Hook::get_proto_original(|| {
+                crate::utilities::hook::Hook::get_proto_original(|| {
                     $hook_name as *mut std::ffi::c_void
                 })
                 .unwrap()
