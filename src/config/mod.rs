@@ -1,10 +1,13 @@
 pub mod variables;
 
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
-use std::sync::OnceLock;
-use std::{error::Error, fmt};
+use std::{
+    fs,
+    io,
+    path::{Path, PathBuf},
+    sync::OnceLock,
+    error::Error,
+    fmt,
+};
 
 use parking_lot::Mutex;
 use serde::{de::DeserializeOwned, Serialize};

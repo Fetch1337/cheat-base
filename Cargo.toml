@@ -10,11 +10,13 @@ path = "src/entry_point.rs"
 [dependencies]
 hudhook = { git = "https://github.com/Fetch1337/hudhook.git" }
 libmem = "5.1"
-minhook = "0.9"
+minhook-sys = "0.1"
 obfstr = "0.4"
 parking_lot = "0.12"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+palette = "0.7"
+nalgebra = "0.34"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 windows = { version = "0.62", features = [

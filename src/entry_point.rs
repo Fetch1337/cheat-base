@@ -3,9 +3,10 @@ pub mod game;
 pub mod gfx;
 pub mod utilities;
 
-use windows::Win32::Foundation::{HINSTANCE, HMODULE};
-use windows::Win32::System::LibraryLoader::DisableThreadLibraryCalls;
-use windows::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
+use windows::Win32::{
+    Foundation::{HINSTANCE, HMODULE},
+    System::{LibraryLoader::DisableThreadLibraryCalls, SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH}}
+};
 
 #[allow(unused_variables)]
 fn load(hmodule: HINSTANCE) {
@@ -28,10 +29,16 @@ fn load(hmodule: HINSTANCE) {
     if let Err(e) = gfx::render::init(hmodule) {
         log_error!("render init failed: {e}");
     }
+
+    log_info!("initializing hooks");
+    if let Err(e) = game::hooks::init() {
+        log_error!("hooks init failed: {e}");
+    }
 }
 
 fn unload(_hmodule: HINSTANCE) {
     log_info!("unloading");
+    game::hooks::eject();
     hudhook::eject();
 }
 

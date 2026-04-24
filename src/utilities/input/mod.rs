@@ -1,8 +1,9 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use windows::Win32::Foundation::*;
-use windows::Win32::UI::Input::KeyboardAndMouse::*;
-use windows::Win32::UI::WindowsAndMessaging::*;
+use windows::Win32::{
+    Foundation::*,
+    UI::{Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
+};
 
 use serde::{Deserialize, Serialize};
 

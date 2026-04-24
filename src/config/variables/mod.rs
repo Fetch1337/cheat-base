@@ -1,6 +1,12 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize
+};
 
-use crate::utilities::input::{BindType, KeyBinds};
+use crate::utilities::input::{
+    BindType,
+    KeyBinds
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Variables {

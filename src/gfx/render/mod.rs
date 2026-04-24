@@ -1,7 +1,9 @@
 use windows::Win32::Foundation::*;
 
-use hudhook::imgui;
-use hudhook::*;
+use hudhook::{
+    *, 
+    imgui,
+};
 
 use crate::gfx::menu;
 use crate::utilities::input;
