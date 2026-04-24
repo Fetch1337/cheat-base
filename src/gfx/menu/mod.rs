@@ -1,7 +1,14 @@
 pub mod theme;
 
-use hudhook::imgui::{Condition, Ui};
-use std::sync::atomic::{AtomicBool, Ordering};
+use hudhook::imgui::{
+    Condition,
+    Ui
+};
+
+use std::sync::atomic::{
+    AtomicBool,
+    Ordering
+};
 
 use crate::config;
 use crate::utilities::input;

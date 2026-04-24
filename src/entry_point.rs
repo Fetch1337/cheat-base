@@ -8,6 +8,18 @@ use windows::Win32::{
     System::{LibraryLoader::DisableThreadLibraryCalls, SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH}}
 };
 
+use anyhow::Error;
+
+pub fn format_error(err: &Error) -> String {
+    let mut parts = vec![err.to_string()];
+
+    for cause in err.chain().skip(1) {
+        parts.push(cause.to_string());
+    }
+
+    parts.join(obfstr::obfstr!(": "))
+}
+
 #[allow(unused_variables)]
 fn load(hmodule: HINSTANCE) {
     #[cfg(debug_assertions)]
@@ -22,23 +34,25 @@ fn load(hmodule: HINSTANCE) {
 
     log_info!("initializing config");
     if let Err(e) = config::init(obfstr::obfstr!("morphey")) {
-        log_error!("config init failed: {e}");
+        log_error!("config init failed: {}", format_error(&e));
     }
 
     log_info!("initializing render");
     if let Err(e) = gfx::render::init(hmodule) {
-        log_error!("render init failed: {e}");
+        log_error!("render init failed: {}", format_error(&e));
     }
 
     log_info!("initializing hooks");
     if let Err(e) = game::hooks::init() {
-        log_error!("hooks init failed: {e}");
+        log_error!("hooks init failed: {}", format_error(&e));
     }
 }
 
 fn unload(_hmodule: HINSTANCE) {
     log_info!("unloading");
-    game::hooks::eject();
+    if let Err(e) = game::hooks::eject() {
+        log_error!("hooks eject failed: {}", format_error(&e));
+    }
     hudhook::eject();
 }
 
@@ -47,7 +61,9 @@ fn unload(_hmodule: HINSTANCE) {
 #[unsafe(no_mangle)]
 pub unsafe extern "system" fn DllMain(hmodule: HINSTANCE, reason: u32, _: *mut std::ffi::c_void) {
     if reason == DLL_PROCESS_ATTACH {
-        let _ = unsafe { DisableThreadLibraryCalls(HMODULE(hmodule.0)) };
+        let _ = unsafe {
+            DisableThreadLibraryCalls(HMODULE(hmodule.0)) 
+        };
 
         std::thread::spawn({
             let h = hmodule.0 as usize;

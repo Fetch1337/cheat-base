@@ -1,5 +1,10 @@
-use hudhook::imgui::draw_list::DrawFlags;
-use hudhook::imgui::{DrawListMut, FontId, ImColor32, Ui};
+use hudhook::imgui::{
+    draw_list::DrawFlags,
+    DrawListMut,
+    FontId,
+    ImColor32,
+    Ui
+};
 
 const TEXT_OUTLINE_DIR4: [[f32; 2]; 4] = [[-1.0, 0.0], [1.0, 0.0], [0.0, -1.0], [0.0, 1.0]];
 const TEXT_OUTLINE_DIR8: [[f32; 2]; 8] = [

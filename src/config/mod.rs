@@ -5,103 +5,90 @@ use std::{
     io,
     path::{Path, PathBuf},
     sync::OnceLock,
-    error::Error,
-    fmt,
 };
 
 use parking_lot::Mutex;
-use serde::{de::DeserializeOwned, Serialize};
+
+use serde::{
+    de::DeserializeOwned, 
+    Serialize
+};
+
+use anyhow::{
+    Context,
+    Result,
+    anyhow
+};
 
 use variables::Variables;
 
 static CONFIG: OnceLock<Mutex<Variables>> = OnceLock::new();
 static CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
 
-#[derive(Debug)]
-pub enum ConfigError {
-    Io(io::Error),
-    Json(serde_json::Error),
-    NotInitialized,
-    AlreadyInitialized,
-}
-
-impl fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Io(e) => write!(f, "{}: {e}", obfstr::obfstr!("io error")),
-            Self::Json(e) => write!(f, "{}: {e}", obfstr::obfstr!("json error")),
-            Self::NotInitialized => write!(f, "{}", obfstr::obfstr!("config not initialized")),
-            Self::AlreadyInitialized => {
-                write!(f, "{}", obfstr::obfstr!("config already initialized"))
-            }
-        }
-    }
-}
-
-impl Error for ConfigError {}
-
-impl From<io::Error> for ConfigError {
-    fn from(value: io::Error) -> Self {
-        Self::Io(value)
-    }
-}
-
-impl From<serde_json::Error> for ConfigError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::Json(value)
-    }
-}
-
-fn get_config_dir(app_name: &str) -> Result<&'static PathBuf, ConfigError> {
+fn get_config_dir(app_name: &str) -> Result<&'static PathBuf> {
     if let Some(dir) = CONFIG_DIR.get() {
         return Ok(dir);
     }
 
     let mut path = std::env::var_os(obfstr::obfstr!("APPDATA"))
         .map(PathBuf::from)
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+        .unwrap_or_else(|| {
+            std::env::current_dir().unwrap_or_else(|_| PathBuf::from(obfstr::obfstr!(".")))
+        });
 
     path.push(app_name);
-    fs::create_dir_all(&path)?;
+    fs::create_dir_all(&path)
+        .with_context(|| {
+            format!(
+                "{} {}",
+                obfstr::obfstr!("failed to create config directory at"),
+                path.display()
+            )
+        })?;
 
     let _ = CONFIG_DIR.set(path);
-    CONFIG_DIR.get().ok_or(ConfigError::NotInitialized)
+    CONFIG_DIR
+        .get()
+        .ok_or_else(|| anyhow!("{}", obfstr::obfstr!("config directory not initialized")))
 }
 
-pub fn get_path(name: &str) -> Result<PathBuf, ConfigError> {
+pub fn get_path(name: &str) -> Result<PathBuf> {
     CONFIG_DIR
         .get()
         .cloned()
         .map(|dir| dir.join(name))
-        .ok_or(ConfigError::NotInitialized)
+        .ok_or_else(|| anyhow!("{}", obfstr::obfstr!("config directory not initialized")))
 }
 
 #[allow(unused_variables)]
-pub fn init(name: &str) -> Result<(), ConfigError> {
-    let dir = get_config_dir(name);
-    let path = dir?.join(obfstr::obfstr!("config.json"));
+pub fn init(name: &str) -> Result<()> {
+    let path = get_config_dir(name)?.join(obfstr::obfstr!("config.json"));
 
     let cfg = match load::<Variables>(&path) {
         Ok(cfg) => cfg,
-        Err(ConfigError::Io(e)) if e.kind() == io::ErrorKind::NotFound => {
+        Err(err)
+            if err
+                .downcast_ref::<io::Error>()
+                .is_some_and(|e| e.kind() == io::ErrorKind::NotFound) =>
+        {
             let cfg = Variables::default();
             save(&cfg, &path)?;
             cfg
         }
-        Err(e) => {
-            crate::log_error!("failed to load config: {e}");
-
-            let cfg = Variables::default();
-            if let Err(save_err) = save(&cfg, &path) {
-                crate::log_error!("failed to rewrite default config: {save_err}");
-            }
-            cfg
+        Err(err) => {
+            return Err(err).with_context(|| {
+                format!(
+                    "{} {}",
+                    obfstr::obfstr!("failed to load config from"),
+                    path.display()
+                )
+            });
         }
     };
 
     CONFIG
         .set(Mutex::new(cfg))
-        .map_err(|_| ConfigError::AlreadyInitialized)?;
+        .map_err(|_| anyhow!("{}", obfstr::obfstr!("config already initialized")))?;
 
     Ok(())
 }
@@ -110,13 +97,44 @@ pub fn get() -> Option<parking_lot::MutexGuard<'static, Variables>> {
     CONFIG.get().map(|cfg| cfg.lock())
 }
 
-pub fn save<T: Serialize>(cfg: &T, path: &Path) -> Result<(), ConfigError> {
-    let file = fs::File::create(path)?;
-    serde_json::to_writer_pretty(file, cfg)?;
+pub fn save<T: Serialize>(cfg: &T, path: &Path) -> Result<()> {
+    let file = fs::File::create(path)
+        .with_context(|| {
+            format!(
+                "{} {}",
+                obfstr::obfstr!("failed to create config file"),
+                path.display()
+            )
+        })?;
+
+    serde_json::to_writer_pretty(file, cfg)
+        .with_context(|| {
+            format!(
+                "{} {}",
+                obfstr::obfstr!("failed to serialize config to"),
+                path.display()
+            )
+        })?;
+        
     Ok(())
 }
 
-pub fn load<T: DeserializeOwned>(path: &Path) -> Result<T, ConfigError> {
-    let file = fs::File::open(path)?;
-    Ok(serde_json::from_reader(file)?)
+pub fn load<T: DeserializeOwned>(path: &Path) -> Result<T> {
+    let file = fs::File::open(path)
+        .with_context(|| {
+            format!(
+                "{} {}",
+                obfstr::obfstr!("failed to open config file"),
+                path.display()
+            )
+        })?;
+        
+    serde_json::from_reader(file)
+        .with_context(|| {
+            format!(
+                "{} {}",
+                obfstr::obfstr!("failed to deserialize config from"),
+                path.display()
+            )
+        })
 }

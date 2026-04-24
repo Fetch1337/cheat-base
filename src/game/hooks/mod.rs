@@ -1,8 +1,6 @@
-use crate::{
-    utilities::hook,
-    create_hook,
-    get_original_fn,
- };
+use anyhow::Result;
+
+use crate::utilities::hook;
 
 // unsafe extern "system" fn hk_func(
 //     a1: *mut f32,
@@ -12,21 +10,19 @@ use crate::{
 //     original_fn(a1, a2)
 // }
 
-pub fn init() -> Result<(), hook::HookError> {
-    hook::init()?;
-
+pub fn init() -> Result<()> {
     // example to hook any game funcs
 
     // let game_process = libmem::get_process()
     // .ok_or_else(|| {
     //     crate::log_error!("failed to get process");
-    //     hook::HookError::ExternalError
+    //     anyhow::anyhow!(obfstr::obfstr!("failed to get process"))
     // })?;
 
     // let client_module = libmem::find_module_ex(&game_process, "module.dll")
     // .ok_or_else(|| {
     //     crate::log_error!("failed to find module.dll");
-    //     hook::HookError::ExternalError
+    //     anyhow::anyhow!(obfstr::obfstr!("failed to find module.dll"))
     // })?;
 
     // let func_target = libmem::sig_scan_ex(
@@ -36,7 +32,7 @@ pub fn init() -> Result<(), hook::HookError> {
     //     client_module.size,
     // ).ok_or_else(|| {
     //     crate::log_error!("func signature scan failed");
-    //     hook::HookError::ExternalError
+    //     anyhow::anyhow!(obfstr::obfstr!("func signature scan failed"))
     // })?;
 
     // create_hook!(func_target, hk_func);
@@ -44,6 +40,6 @@ pub fn init() -> Result<(), hook::HookError> {
     Ok(())
 }
 
-pub fn eject() {
-
+pub fn eject() -> Result<()> {
+    hook::eject()
 }
