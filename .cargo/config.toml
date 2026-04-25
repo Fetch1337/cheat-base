@@ -1,2 +1,5 @@
-[alias]
-release = ["exec", "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "build.ps1"]
+[unstable]
+profile-rustflags = true
+
+[profile.release]
+rustflags = ["-Zlocation-detail=none"]

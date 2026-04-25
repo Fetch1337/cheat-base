@@ -1,14 +1,8 @@
 use windows::Win32::Foundation::*;
 
-use hudhook::{
-    *, 
-    imgui
-};
+use hudhook::{imgui, *};
 
-use anyhow::{
-    Context,
-    Result
-};
+use anyhow::{Context, Result};
 
 use crate::gfx::menu;
 use crate::utilities::input;
@@ -37,15 +31,13 @@ impl ImguiRenderLoop for Overlay {
 }
 
 pub fn init(hmodule: HINSTANCE) -> Result<()> {
-    let builder = hudhook::Hudhook::builder().with_hmodule(hmodule)
+    let builder = hudhook::Hudhook::builder()
+        .with_hmodule(hmodule)
         .with::<hudhook::hooks::dx11::ImguiDx11Hooks>(Overlay);
 
     builder
         .build()
         .apply()
         .map_err(|e: mh::MH_STATUS| anyhow::anyhow!("{e:?}"))
-        .context(format!(
-            "{}",
-            obfstr::obfstr!("failed to apply hudhook render hooks")
-        ))
+        .context(obfstr::obfstr!("failed to apply hudhook render hooks").to_string())
 }

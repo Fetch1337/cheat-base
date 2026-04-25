@@ -9,7 +9,9 @@ macro_rules! log_info {
 #[cfg(not(debug_assertions))]
 #[macro_export]
 macro_rules! log_info {
-    ($($arg:tt)*) => {};
+    ($($arg:tt)*) => {
+        let _ = format_args!($($arg)*);
+    };
 }
 
 #[cfg(debug_assertions)]
@@ -23,5 +25,7 @@ macro_rules! log_error {
 #[cfg(not(debug_assertions))]
 #[macro_export]
 macro_rules! log_error {
-    ($($arg:tt)*) => {};
+    ($($arg:tt)*) => {
+        let _ = format_args!($($arg)*);
+    };
 }

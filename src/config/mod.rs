@@ -1,7 +1,7 @@
 pub mod variables;
 
 use std::{
-    fs,
+    fs::{self, OpenOptions},
     io,
     path::{Path, PathBuf},
     sync::OnceLock,
@@ -9,16 +9,9 @@ use std::{
 
 use parking_lot::Mutex;
 
-use serde::{
-    de::DeserializeOwned, 
-    Serialize
-};
+use serde::{Serialize, de::DeserializeOwned};
 
-use anyhow::{
-    Context,
-    Result,
-    anyhow
-};
+use anyhow::{Context, Result, anyhow};
 
 use variables::Variables;
 
@@ -37,14 +30,13 @@ fn get_config_dir(app_name: &str) -> Result<&'static PathBuf> {
         });
 
     path.push(app_name);
-    fs::create_dir_all(&path)
-        .with_context(|| {
-            format!(
-                "{} {}",
-                obfstr::obfstr!("failed to create config directory at"),
-                path.display()
-            )
-        })?;
+    fs::create_dir_all(&path).with_context(|| {
+        format!(
+            "{} {}",
+            obfstr::obfstr!("failed to create config directory at"),
+            path.display()
+        )
+    })?;
 
     let _ = CONFIG_DIR.set(path);
     CONFIG_DIR
@@ -97,44 +89,76 @@ pub fn get() -> Option<parking_lot::MutexGuard<'static, Variables>> {
     CONFIG.get().map(|cfg| cfg.lock())
 }
 
+pub fn snapshot() -> Variables {
+    get().map(|cfg| *cfg).unwrap_or_default()
+}
+
+pub fn with<R>(f: impl FnOnce(&Variables) -> R) -> R {
+    let cfg = snapshot();
+    f(&cfg)
+}
+
+pub fn with_mut<R>(f: impl FnOnce(&mut Variables) -> R) -> Option<R> {
+    get().map(|mut cfg| f(&mut cfg))
+}
+
 pub fn save<T: Serialize>(cfg: &T, path: &Path) -> Result<()> {
-    let file = fs::File::create(path)
+    let tmp_path = path.with_extension(obfstr::obfstr!("json.tmp"));
+    let file = OpenOptions::new()
+        .create(true)
+        .truncate(true)
+        .write(true)
+        .open(&tmp_path)
         .with_context(|| {
             format!(
                 "{} {}",
                 obfstr::obfstr!("failed to create config file"),
-                path.display()
+                tmp_path.display()
             )
         })?;
 
-    serde_json::to_writer_pretty(file, cfg)
-        .with_context(|| {
-            format!(
-                "{} {}",
-                obfstr::obfstr!("failed to serialize config to"),
-                path.display()
-            )
-        })?;
-        
+    serde_json::to_writer_pretty(&file, cfg).with_context(|| {
+        format!(
+            "{} {}",
+            obfstr::obfstr!("failed to serialize config to"),
+            tmp_path.display()
+        )
+    })?;
+
+    file.sync_all().with_context(|| {
+        format!(
+            "{} {}",
+            obfstr::obfstr!("failed to flush config file"),
+            tmp_path.display()
+        )
+    })?;
+
+    fs::rename(&tmp_path, path).with_context(|| {
+        format!(
+            "{} {} {}",
+            obfstr::obfstr!("failed to replace config file"),
+            tmp_path.display(),
+            path.display()
+        )
+    })?;
+
     Ok(())
 }
 
 pub fn load<T: DeserializeOwned>(path: &Path) -> Result<T> {
-    let file = fs::File::open(path)
-        .with_context(|| {
-            format!(
-                "{} {}",
-                obfstr::obfstr!("failed to open config file"),
-                path.display()
-            )
-        })?;
-        
-    serde_json::from_reader(file)
-        .with_context(|| {
-            format!(
-                "{} {}",
-                obfstr::obfstr!("failed to deserialize config from"),
-                path.display()
-            )
-        })
+    let file = fs::File::open(path).with_context(|| {
+        format!(
+            "{} {}",
+            obfstr::obfstr!("failed to open config file"),
+            path.display()
+        )
+    })?;
+
+    serde_json::from_reader(file).with_context(|| {
+        format!(
+            "{} {}",
+            obfstr::obfstr!("failed to deserialize config from"),
+            path.display()
+        )
+    })
 }

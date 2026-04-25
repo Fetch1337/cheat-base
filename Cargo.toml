@@ -8,8 +8,8 @@ crate-type = ["cdylib"]
 path = "src/entry_point.rs"
 
 [dependencies]
+hudhook = { git = "https://github.com/Fetch1337/hudhook.git", rev = "a4c37104a7976c34c2aa83b79176f1807a0f3a34" }
 anyhow = "1"
-hudhook = { git = "https://github.com/Fetch1337/hudhook.git" }
 libmem = "5.1"
 minhook-sys = "0.1"
 obfstr = "0.4"
@@ -31,14 +31,21 @@ windows = { version = "0.62", features = [
 ] }
 
 [profile.dev]
-opt-level = 1
-debug = true
+opt-level = 0
+debug = "full"
+debug-assertions = true
+overflow-checks = true
+incremental = true
+panic = "unwind"
 split-debuginfo = "packed"
 
 [profile.release]
 codegen-units = 1
 opt-level = 3
 debug = false
+debug-assertions = false
+overflow-checks = false
+incremental = false
 strip = "symbols"
 lto = "fat"
 panic = "abort"

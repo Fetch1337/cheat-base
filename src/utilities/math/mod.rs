@@ -1,8 +1,4 @@
-use nalgebra::{
-    Vector2, Vector3, Vector4,
-    Matrix3, Matrix4,
-    UnitQuaternion,
-};
+use nalgebra::{Matrix3, Matrix4, UnitQuaternion, Vector2, Vector3, Vector4};
 
 pub type Vec2 = Vector2<f32>;
 pub type Vec3 = Vector3<f32>;
@@ -18,8 +14,8 @@ pub const M_2PI: f32 = std::f32::consts::TAU;
 pub const M_HPI: f32 = std::f32::consts::FRAC_PI_2;
 pub const M_QPI: f32 = std::f32::consts::FRAC_PI_4;
 
-pub const M_GPI: f32 = 1.6180339887498948482;
-pub const M_RADPI: f32 = 57.29577951308232;
+pub const M_GPI: f32 = 1.618_034;
+pub const M_RADPI: f32 = 57.295_78;
 
 pub const EPSILON: f32 = 1e-6;
 
@@ -42,10 +38,7 @@ pub fn normalize_angle(mut angle: f32) -> f32 {
 }
 
 pub fn normalize_angles(angles: Vec2) -> Vec2 {
-    Vec2::new(
-        normalize_angle(angles.x),
-        normalize_angle(angles.y),
-    )
+    Vec2::new(normalize_angle(angles.x), normalize_angle(angles.y))
 }
 
 pub fn dot(a: Vec3, b: Vec3) -> f32 {

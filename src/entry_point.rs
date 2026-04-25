@@ -5,7 +5,7 @@ pub mod utilities;
 
 use windows::Win32::{
     Foundation::{HINSTANCE, HMODULE},
-    System::{LibraryLoader::DisableThreadLibraryCalls, SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH}}
+    System::{LibraryLoader::DisableThreadLibraryCalls, SystemServices::DLL_PROCESS_ATTACH},
 };
 
 use anyhow::Error;
@@ -48,6 +48,7 @@ fn load(hmodule: HINSTANCE) {
     }
 }
 
+#[allow(dead_code)]
 fn unload(_hmodule: HINSTANCE) {
     log_info!("unloading");
     if let Err(e) = game::hooks::eject() {
@@ -61,15 +62,11 @@ fn unload(_hmodule: HINSTANCE) {
 #[unsafe(no_mangle)]
 pub unsafe extern "system" fn DllMain(hmodule: HINSTANCE, reason: u32, _: *mut std::ffi::c_void) {
     if reason == DLL_PROCESS_ATTACH {
-        let _ = unsafe {
-            DisableThreadLibraryCalls(HMODULE(hmodule.0)) 
-        };
+        let _ = unsafe { DisableThreadLibraryCalls(HMODULE(hmodule.0)) };
 
         std::thread::spawn({
             let h = hmodule.0 as usize;
             move || load(HINSTANCE(h as _))
         });
-    } else if reason == DLL_PROCESS_DETACH {
-        unload(hmodule);
     }
 }

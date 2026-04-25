@@ -4,11 +4,7 @@ use std::{
     sync::{Mutex, OnceLock},
 };
 
-use anyhow::{
-    Result,
-    anyhow,
-    bail,
-};
+use anyhow::{Result, anyhow, bail};
 
 pub struct Hook {
     pub target: *mut c_void,
@@ -31,7 +27,9 @@ fn status_message(status: minhook_sys::MH_STATUS) -> String {
         return format!("{} {status}", obfstr::obfstr!("status"));
     }
 
-    unsafe { CStr::from_ptr(raw) }.to_string_lossy().into_owned()
+    unsafe { CStr::from_ptr(raw) }
+        .to_string_lossy()
+        .into_owned()
 }
 
 fn ensure_ok(status: minhook_sys::MH_STATUS, action: &str) -> Result<()> {
@@ -64,9 +62,9 @@ impl Hook {
     }
 
     pub fn hook(target: *const c_void, detour: *const c_void) -> Result<()> {
-        let mut targets = targets().lock().map_err(|_| {
-            anyhow!("{}", obfstr::obfstr!("hook target storage lock poisoned"))
-        })?;
+        let mut targets = targets()
+            .lock()
+            .map_err(|_| anyhow!("{}", obfstr::obfstr!("hook target storage lock poisoned")))?;
 
         if targets.iter().any(|hook| hook.target == target.cast_mut()) {
             bail!(
@@ -86,7 +84,13 @@ impl Hook {
             unsafe { minhook_sys::MH_CreateHook(hk.target, hk.detour, from_mut(&mut hk.original)) },
             obfstr::obfstr!("MH_CreateHook"),
         )?;
-        ensure_ok(unsafe { minhook_sys::MH_EnableHook(hk.target) }, obfstr::obfstr!("MH_EnableHook"))?;
+        if let Err(err) = ensure_ok(
+            unsafe { minhook_sys::MH_EnableHook(hk.target) },
+            obfstr::obfstr!("MH_EnableHook"),
+        ) {
+            let _ = unsafe { minhook_sys::MH_RemoveHook(hk.target) };
+            return Err(err);
+        }
 
         targets.push(hk);
         Ok(())
@@ -95,19 +99,25 @@ impl Hook {
 
 pub fn eject() -> Result<()> {
     let hooks = {
-        let mut targets = targets().lock().map_err(|_| {
-            anyhow!("{}", obfstr::obfstr!("hook target storage lock poisoned"))
-        })?;
+        let mut targets = targets()
+            .lock()
+            .map_err(|_| anyhow!("{}", obfstr::obfstr!("hook target storage lock poisoned")))?;
 
         std::mem::take(&mut *targets)
     };
 
     for hook in &hooks {
-        ensure_ok(unsafe { minhook_sys::MH_DisableHook(hook.target) }, obfstr::obfstr!("MH_DisableHook"))?;
+        ensure_ok(
+            unsafe { minhook_sys::MH_DisableHook(hook.target) },
+            obfstr::obfstr!("MH_DisableHook"),
+        )?;
     }
 
     for hook in &hooks {
-        ensure_ok(unsafe { minhook_sys::MH_RemoveHook(hook.target) }, obfstr::obfstr!("MH_RemoveHook"))?;
+        ensure_ok(
+            unsafe { minhook_sys::MH_RemoveHook(hook.target) },
+            obfstr::obfstr!("MH_RemoveHook"),
+        )?;
     }
 
     Ok(())
@@ -116,12 +126,10 @@ pub fn eject() -> Result<()> {
 #[macro_export]
 macro_rules! create_hook {
     ($target_function:ident, $detour_function:ident) => {{
-        let target_function =
-            $target_function as *const std::ffi::c_void;
-        let detour_function_ptr =
-            $detour_function as *const std::ffi::c_void;
+        let target_function = $target_function as *const std::ffi::c_void;
+        let detour_function_ptr = $detour_function as *const std::ffi::c_void;
 
-        crate::utilities::hook::Hook::hook(target_function, detour_function_ptr)?;
+        $crate::utilities::hook::Hook::hook(target_function, detour_function_ptr)?;
     }};
 }
 
@@ -133,10 +141,10 @@ macro_rules! get_original_fn {
                 *mut std::ffi::c_void,
                 extern "system" fn($($arg),*) -> $ret,
             >(
-                crate::utilities::hook::Hook::get_proto_original(|| {
+                $crate::utilities::hook::Hook::get_proto_original(|| {
                     $hook_name as *mut std::ffi::c_void
                 })
-                .unwrap()
+                .expect(obfstr::obfstr!("original hook function not registered"))
             )
         };
     };

@@ -1,10 +1,4 @@
-use hudhook::imgui::{
-    draw_list::DrawFlags,
-    DrawListMut,
-    FontId,
-    ImColor32,
-    Ui
-};
+use hudhook::imgui::{DrawListMut, FontId, ImColor32, Ui, draw_list::DrawFlags};
 
 const TEXT_OUTLINE_DIR4: [[f32; 2]; 4] = [[-1.0, 0.0], [1.0, 0.0], [0.0, -1.0], [0.0, 1.0]];
 const TEXT_OUTLINE_DIR8: [[f32; 2]; 8] = [
@@ -461,12 +455,15 @@ impl PolygonCmd<'_, '_, '_> {
         if self.points.len() < 2 {
             return;
         }
+        if self.filled && self.points.len() < 3 {
+            return;
+        }
         let dl = self.ctx.get_draw_list();
 
-        let points: Vec<[f32; 2]> = self.points.to_vec();
         let draw_outline = self.outline || !self.filled;
 
         if self.filled {
+            let points: Vec<[f32; 2]> = self.points.to_vec();
             if draw_outline {
                 dl.add_polyline(points.clone(), self.color)
                     .filled(true)
@@ -478,6 +475,10 @@ impl PolygonCmd<'_, '_, '_> {
         }
 
         if draw_outline {
+            let mut points: Vec<[f32; 2]> = self.points.to_vec();
+            if self.closed {
+                points.push(self.points[0]);
+            }
             let color = self.outline_color.unwrap_or(if self.filled {
                 self.ctx.defaults.outline_color
             } else {
